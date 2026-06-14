@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Battle Arena - Quantum Evolution</title>
+    <style>
+        @import url('https://googleapis.com');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Cinzel', serif;
+            background: #020208;
+            min-height: 100vh; color: #e0e0e0; overflow: hidden; position: relative;
+            transition: background 0.1s ease;
+        }
+
+        /* TELA DE BOAS-VINDAS (VERSÃO BETA) */
+        .beta-welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000000; color: #ffffff; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; text-align: center; transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .beta-box {
+            max-width: 600px; animation: fadeInBeta 1s ease-out;
+        }
+        .beta-box h2 {
+            font-family: 'Orbitron', sans-serif; color: #00ffcc; margin-bottom: 25px;
+            letter-spacing: 2px; text-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+        .beta-box p {
+            font-size: 1.1rem; line-height: 1.8; margin-bottom: 35px; color: #e0e0e0;
+        }
+        .beta-btn {
+            font-family: 'Orbitron', sans-serif; padding: 12px 35px; font-size: 0.95rem;
+            background: transparent; border: 2px solid #00ffcc; color: #00ffcc;
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.1);
+        }
+        .beta-btn:hover {
+            background: #00ffcc; color: #000; box-shadow: 0 0 25px #00ffcc; transform: scale(1.05);
+        }
+        @keyframes fadeInBeta {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flash de Efeitos na Tela */
+        body.flash-damage { background: #3a0000 !important; }
+        body.flash-heal { background: #002a10 !important; }
+        body.flash-anomalia { background: #220033 !important; }
+        body.flash-mutation { background: #3d0066 !important; }
+
+        /* TELA DE MENU PRINCIPAL */
+        .screen {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; background: #03030f; transition: opacity 0.5s;
+        }
+        
+        .game-title {
+            font-family: 'Orbitron', sans-serif; font-size: 3.5rem; text-align: center;
+            background: linear-gradient(180deg, #9900ff, #00ffcc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px; letter-spacing: 4px;
+        }
+
+        .profile-badge {
+            font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: #00ffcc;
+            background: rgba(0,255,204,0.05); padding: 8px 20px; border-radius: 20px;
+            border: 1px solid rgba(0,255,204,0.2); margin-bottom: 30px;
+        }
+
+        .menu-buttons { display: flex; flex-direction: column; gap: 15px; width: 300px; }
+        .menu-btn {
+            font-family: 'Orbitron', sans-serif; padding: 12px; font-size: 1rem;
+            background: rgba(153,0,255,0.1); border: 2px solid #9900ff; color: #fff;
+            border-radius: 8px; cursor: pointer; transition: 0.3s;
+        }
+        .menu-btn:hover { background: #9900ff; box-shadow: 0 0 15px #9900ff; }
+
+        /* MODAL DE ALERTAS */
+        .modal {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            background: rgba(0,0,0,0.9); z-index: 20; display: none;
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #090914; border: 2px solid #ff0055; padding: 30px;
+            border-radius: 12px; max-width: 500px; text-align: center; width: 90%;
+        }
+        .modal-content h3 { font-family: 'Orbitron', sans-serif; color: #ff0055; margin-bottom: 15px; }
+        .modal-content p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; color: #ccc; }
+        .modal-btn {
+            font-family: 'Orbitron', sans-serif; padding: 10px 25px; background: #ff0055;
+            border: none; color: #fff; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+
+        /* TRANSIÇÕES CINEMÁTICAS */
+        .cinema-overlay {
+            position: fixed; top:0; left:0; width:100vw; height:100vh;
+            z-index: 30; display: none; background: #000;
+            align-items: center; justify-content: center; flex-direction: column;
+        }
+
+        .quantum-vortex {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: #000; box-shadow: 0 0 60px 30px #9900ff, inset 0 0 40px #000;
+            position: relative; display: none; opacity: 0;
+        }
+        .vortex-ring {
+            position: absolute; top:-10px; left:-10px; right:-10px; bottom:-10px;
+            border: 4px dotted #00ffcc; border-radius: 50%; animation: spin 4s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .dissolve-grid {
+            position: absolute; width: 100%; height: 100%; top:0; left:0;
+            background: #003366; display: none; pointer-events: none;
+        }
+
+        .terminal-text {
+            font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: #ff0055;
+            text-align: center; max-width: 600px; min-height: 50px; margin-top: 30px;
+            text-shadow: 0 0 10px rgba(255,0,85,0.5); padding: 0 20px;
+        }
+
+        .skip-btn {
+            position: absolute; bottom: 40px; right: 40px; font-family: 'Orbitron', sans-serif;
+            padding: 8px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: #aaa; border-radius: 4px; cursor: pointer; display: none;
+        }
+
+        /* TABULEIRO DO JOGO ATIVO */
+        .board-screen {
+            display: none; width: 100vw; height: 100vh; flex-direction: column;
+            justify-content: space-between; padding: 15px; background: #030308;
+        }
+        .board-hud {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px;
+            border: 1px solid rgba(153, 0, 255, 0.2);
+        }
+        
+        .credits-container {
+            display: flex; flex-direction: column; gap: 2px; cursor: help; position: relative;
+        }
+        .dev-tag {
+            font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: #777; transition: color 0.2s;
+        }
+        .credits-container:hover .dev-tag { color: #00ffcc; }
+        
+        /* NOVO BALÃO COM A FRASE CORRIGIDA */
+        .credits-container::after {
+            content: "Este jogo está sendo desenvolvido por Whagton. Como ainda está em fase beta, algumas funcionalidades podem mudar ou ainda estar incompletas.";
+            position: absolute; top: 45px; left: 0; width: 280px; background: #090915;
+            border: 1px solid #00ffcc; color: #fff; padding: 8px 12px; font-size: 0.75rem;
+            border-radius: 6px; font-family: sans-serif; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease; z-index: 200; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            line-height: 1.4;
+        }
+        .credits-container:hover::after { opacity: 1; }
+
+        .hud-center { text-align: center; font-family: 'Orbitron', sans-serif; }
+        
+        .table-ring {
+            display: flex; justify-content: center; align-items: center; flex-grow: 1;
+            position: relative; margin: 20px 0;
+        }
+        .circular-arena {
+            width: 440px; height: 440px; border: 2px dashed rgba(0, 255, 204, 0.15);
+            border-radius: 50%; position: relative; display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Painéis dos Bots */
+        .bot-node {
+            position: absolute; width: 105px; height: 105px; border-radius: 50%;
+            border: 2px solid #444; background: #0c0c14; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem; text-align: center; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .bot-node:hover { transform: scale(1.05); }
+        .bot-node.selected { border-color: #ffd700 !important; box-shadow: 0 0 20px #ffd700 !important; }
+        
+        .node-b1 { left: -25px; border-color: #00ccff; }
+        .node-b2 { top: -25px; border-color: #ff4500; }
+        .node-b3 { right: -25px; border-color: #e044ff; }
+
+        .bot-node.mutating {
+            border-color: #9900ff !important;
+            animation: glitchBorder 0.4s infinite alternate;
+            background: #1a0033;
+        }
+        @keyframes glitchBorder {
+            from { box-shadow: 0 0 5px #9900ff; }
+            to { box-shadow: 0 0 20px #ff0055; }
+        }
+
+        .player-hand { display: flex; justify-content: center; gap: 10px; height: 150px; }
+        .card {
+            width: 105px; height: 145px; background: #0a0a12; border: 2px solid #ff0055;
+            border-radius: 6px; padding: 6px; display: flex; flex-direction: column;
+            justify-content: space-between; cursor: pointer; font-size: 0.65rem; transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-8px); }
+        .card-title { font-family: 'Orbitron', sans-serif; font-weight: bold; text-align: center; color: #fff; }
