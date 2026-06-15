@@ -14,120 +14,104 @@
             color: #e0e0e0; 
             overflow: hidden; 
             position: relative;
+            transition: background 0.2s ease;
         }
 
-        /* 1. TELA DE INICIALIZAÇÃO (SPLASH SCREEN) */
+        /* 1. TELA SPLASH */
         .splash-screen {
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at center, #0a0518 0%, #020208 100%);
-            z-index: 200; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
+            z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .splash-container { text-align: center; }
         .splash-title {
-            font-size: 3.5rem; 
-            font-weight: 900;
-            color: #00ffcc;
-            letter-spacing: 6px; 
-            margin-bottom: 40px;
-            text-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            font-size: 3.5rem; font-weight: 900; color: #00ffcc; letter-spacing: 6px; margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.5); text-align: center;
         }
         .start-game-btn {
-            font-size: 1.3rem; 
-            font-weight: 700;
-            padding: 16px 50px; 
+            font-size: 1.3rem; font-weight: 700; padding: 16px 50px; 
             background: linear-gradient(135deg, #9900ff, #ff0055);
-            border: none; 
-            color: white; 
-            border-radius: 50px; 
-            cursor: pointer;
-            letter-spacing: 3px; 
-            text-transform: uppercase;
-            box-shadow: 0 0 30px rgba(153, 0, 255, 0.6);
-            transition: all 0.2s ease;
+            border: none; color: white; border-radius: 50px; cursor: pointer; letter-spacing: 3px;
+            box-shadow: 0 0 30px rgba(153, 0, 255, 0.6); transition: all 0.2s ease;
         }
-        .start-game-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px #ff0055;
-        }
+        .start-game-btn:hover { transform: scale(1.05); box-shadow: 0 0 40px #ff0055; }
 
-        /* 2. TELA DE BOAS-VINDAS (VERSÃO BETA) */
+        /* 2. TELA BETA */
         .beta-welcome-screen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #050510; color: #ffffff; z-index: 100;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; text-align: center;
+            display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
         }
         .beta-box { max-width: 600px; }
         .beta-box h2 { color: #00ffcc; margin-bottom: 25px; font-size: 2rem; }
-        .beta-box p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 35px; color: #e0e0e0; }
+        .beta-box p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 35px; }
         .beta-btn {
-            padding: 12px 35px; font-size: 1rem;
-            background: transparent; border: 2px solid #00ffcc; color: #00ffcc;
+            padding: 12px 35px; font-size: 1rem; background: transparent; border: 2px solid #00ffcc; color: #00ffcc;
             border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
         }
         .beta-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 25px #00ffcc; }
 
-        /* 3. TELA DE MENU PRINCIPAL */
+        /* 3. MENU PRINCIPAL */
         .screen {
             position: fixed; top:0; left:0; width:100vw; height:100vh;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; background: #03030f;
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; background: #03030f;
         }
-        .game-title {
-            font-size: 3rem; text-align: center;
-            color: #9900ff; margin-bottom: 20px; letter-spacing: 4px;
-        }
+        .game-title { font-size: 3rem; text-align: center; color: #9900ff; margin-bottom: 20px; letter-spacing: 4px; }
         .profile-badge {
-            font-size: 0.9rem; color: #00ffcc;
-            background: rgba(0,255,204,0.05); padding: 8px 20px; border-radius: 20px;
+            font-size: 0.9rem; color: #00ffcc; background: rgba(0,255,204,0.05); padding: 8px 20px; border-radius: 20px;
             border: 1px solid rgba(0,255,204,0.2); margin-bottom: 30px;
         }
         .menu-buttons { display: flex; flex-direction: column; gap: 15px; width: 300px; }
         .menu-btn {
-            padding: 12px; font-size: 1rem;
-            background: rgba(153,0,255,0.1); border: 2px solid #9900ff; color: #fff;
-            border-radius: 8px; cursor: pointer; transition: 0.3s;
+            padding: 12px; font-size: 1rem; background: rgba(153,0,255,0.1); border: 2px solid #9900ff; color: #fff;
+            border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center;
         }
         .menu-btn:hover { background: #9900ff; box-shadow: 0 0 15px #9900ff; }
 
-        /* 4. TABULEIRO DO JOGO ATIVO */
+        /* Flash de dano */
+        body.flash-damage { background: #3a0000 !important; }
+
+        /* 4. TABULEIRO DO JOGO COMPLETO */
         .board-screen {
             display: none; width: 100vw; height: 100vh; flex-direction: column;
-            justify-content: space-between; padding: 15px; background: #030308;
+            justify-content: space-between; padding: 20px; background: #04040c;
             position: fixed; top: 0; left: 0; z-index: 5;
         }
         .board-hud {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px;
-            border: 1px solid rgba(153, 0, 255, 0.2);
+            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px;
+            border: 1px solid rgba(153, 0, 255, 0.3); width: 100%;
         }
         .credits-container { display: flex; flex-direction: column; gap: 2px; }
-        .dev-tag { font-size: 0.65rem; color: #777; }
-        .hud-center { text-align: center; color: #00ffcc;}
-        .table-ring { border: 1px solid #333; padding: 10px; border-radius: 5px; }
+        .dev-tag { font-size: 0.7rem; color: #00ffcc; font-weight: bold; }
+        .hud-center { text-align: center; color: #ffffff; }
+        .hud-center h2 { color: #9900ff; font-size: 1.5rem; }
+        .table-ring { border: 1px solid #ff0055; padding: 8px 15px; border-radius: 5px; color: #ff0055; font-weight: bold; }
 
-        /* MODAL DE ALERTAS */
+        /* ÁREA DE BATALHA */
+        .battle-area {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; margin: 20px 0;
+        }
+        .status-box {
+            background: rgba(255, 255, 255, 0.05); padding: 15px 30px; border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.1); text-align: center; min-width: 250px;
+        }
+        .hp-text { font-size: 1.3rem; font-weight: bold; color: #ff0055; margin-top: 5px; }
+        .action-btn {
+            background: linear-gradient(135deg, #00ffcc, #9900ff); border: none; color: black;
+            padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 5px; cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); transition: 0.2s;
+        }
+        .action-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px #00ffcc; }
+
+        /* MODAL */
         .modal {
             position: fixed; top:0; left:0; width:100vw; height:100vh;
-            background: rgba(0,0,0,0.8); z-index: 20; display: none;
-            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.8); z-index: 20; display: none; align-items: center; justify-content: center;
         }
         .modal-content {
-            background: #090914; border: 2px solid #ff0055; padding: 30px;
-            border-radius: 12px; max-width: 500px; text-align: center; width: 90%;
+            background: #090914; border: 2px solid #ff0055; padding: 30px; border-radius: 12px; max-width: 500px; text-align: center; width: 90%;
         }
-        .modal-content h3 { color: #ff0055; margin-bottom: 15px; }
-        .modal-content p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; color: #ccc; }
-        .modal-btn {
-            padding: 10px 25px; background: #ff0055; border: none; color: #fff; 
-            border-radius: 5px; cursor: pointer; font-weight: bold;
-        }
+        .modal-btn { padding: 10px 25px; background: #ff0055; border: none; color: #fff; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px;}
     </style>
 </head>
 <body>
@@ -165,13 +149,27 @@
             </div>
             <div class="hud-center">
                 <h2>ARENA QUANTUM</h2>
-                <p>O combate começou!</p>
+                <p id="battleStatus">O combate começou!</p>
             </div>
             <div class="table-ring">Rodada: 1</div>
         </div>
-        <div style="text-align: center; margin-top: 50px;">
-            <p>Espaço reservado para as cartas...</p>
-            <button class="menu-btn" style="margin-top:20px; width:auto; padding: 10px 20px;" onclick="voltarAoMenu()">Voltar ao Menu</button>
+
+        <div class="battle-area">
+            <div class="status-box">
+                <h3>Inimigo: Boss Quântico</h3>
+                <div class="hp-text" id="enemyHp">HP: 100</div>
+            </div>
+
+            <button class="action-btn" onclick="atacarInimigo()">Atacar com Carta Cósmica!</button>
+
+            <div class="status-box">
+                <h3>Seu Status</h3>
+                <div class="hp-text" style="color: #00ffcc;">HP: 100</div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="menu-btn" style="width: auto; padding: 10px 30px;" onclick="voltarAoMenu()">Fugir da Batalha</button>
         </div>
     </div>
 
@@ -184,6 +182,9 @@
     </div>
 
     <script>
+        // Variável do jogo
+        let enemyHp = 100;
+
         function avancarSplash() {
             document.getElementById('splashScreen').style.display = 'none';
             document.getElementById('betaScreen').style.display = 'flex';
@@ -195,8 +196,31 @@
         }
 
         function iniciarJogoAtivo() {
+            // Reinicia o HP do inimigo ao entrar
+            enemyHp = 100;
+            document.getElementById('enemyHp').innerText = "HP: " + enemyHp;
+            document.getElementById('battleStatus').innerText = "O combate começou!";
+            
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('gameBoard').style.display = 'flex';
+        }
+
+        function atacarInimigo() {
+            if(enemyHp > 0) {
+                enemyHp -= 20; // Tira 20 de vida
+                if(enemyHp < 0) enemyHp = 0;
+                
+                document.getElementById('enemyHp').innerText = "HP: " + enemyHp;
+                document.getElementById('battleStatus').innerText = "Você causou 20 de dano!";
+                
+                // Efeito visual de piscar a tela vermelha (Dano)
+                document.body.classList.add('flash-damage');
+                setTimeout(() => document.body.classList.remove('flash-damage'), 150);
+
+                if(enemyHp === 0) {
+                    document.getElementById('battleStatus').innerText = "Vitória! Você destruiu o Boss!";
+                }
+            }
         }
 
         function voltarAoMenu() {
