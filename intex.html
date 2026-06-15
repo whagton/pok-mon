@@ -67,8 +67,9 @@
         }
         .menu-btn:hover { background: #9900ff; box-shadow: 0 0 15px #9900ff; }
 
-        /* Flash de dano */
+        /* Flash de dano e cura */
         body.flash-damage { background: #3a0000 !important; }
+        body.flash-heal { background: #002b11 !important; }
 
         /* 4. TABULEIRO DO JOGO COMPLETO */
         .board-screen {
@@ -89,19 +90,81 @@
 
         /* ÁREA DE BATALHA */
         .battle-area {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; margin: 20px 0;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; margin: 15px 0;
         }
         .status-box {
-            background: rgba(255, 255, 255, 0.05); padding: 15px 30px; border-radius: 8px; 
-            border: 1px solid rgba(255,255,255,0.1); text-align: center; min-width: 250px;
+            background: rgba(255, 255, 255, 0.05); padding: 12px 25px; border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.1); text-align: center; min-width: 260px;
         }
         .hp-text { font-size: 1.3rem; font-weight: bold; color: #ff0055; margin-top: 5px; }
-        .action-btn {
-            background: linear-gradient(135deg, #00ffcc, #9900ff); border: none; color: black;
-            padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 5px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); transition: 0.2s;
+
+        /* ÁREA DAS CARTAS (MÃO) */
+        .hand-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 180px;
+            perspective: 1000px; /* Dá um leve efeito 3D ao mover as cartas */
         }
-        .action-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px #00ffcc; }
+
+        /* DESIGN ESTILIZADO DAS CARTAS COŚMICAS */
+        .quantum-card {
+            width: 130px;
+            height: 180px;
+            background: linear-gradient(145deg, #090615 0%, #120b2a 100%);
+            border: 2px solid #9900ff;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            user-select: none;
+        }
+
+        /* Efeito de passar o mouse por cima */
+        .quantum-card:hover {
+            transform: translateY(-20px) rotate(1deg) scale(1.08);
+            box-shadow: 0 12px 30px var(--card-glow);
+            border-color: var(--card-glow);
+        }
+
+        .card-header {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .card-footer {
+            font-size: 0.65rem;
+            text-align: center;
+            color: #aaa;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 4px 0;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
 
         /* MODAL */
         .modal {
@@ -149,9 +212,9 @@
             </div>
             <div class="hud-center">
                 <h2>ARENA QUANTUM</h2>
-                <p id="battleStatus">O combate começou!</p>
+                <p id="battleStatus">Selecione uma carta da sua mão cósmica para agir!</p>
             </div>
-            <div class="table-ring">Rodada: 1</div>
+            <div class="table-ring" id="turnIndicator">Rodada: 1</div>
         </div>
 
         <div class="battle-area">
@@ -160,11 +223,11 @@
                 <div class="hp-text" id="enemyHp">HP: 100</div>
             </div>
 
-            <button class="action-btn" onclick="atacarInimigo()">Atacar com Carta Cósmica!</button>
+            <div class="hand-container" id="playerHand"></div>
 
             <div class="status-box">
                 <h3>Seu Status</h3>
-                <div class="hp-text" style="color: #00ffcc;">HP: 100</div>
+                <div class="hp-text" id="playerHp" style="color: #00ffcc;">HP: 100</div>
             </div>
         </div>
 
@@ -182,8 +245,22 @@
     </div>
 
     <script>
-        // Variável do jogo
+        // Variáveis globais do estado do jogo
         let enemyHp = 100;
+        let playerHp = 100;
+        let rodada = 1;
+
+        // O DECK PRINCIPAL: Lista de todas as cartas possíveis do jogo
+        const deckDeCartas = [
+            { nome: "Pulso de Fóton",  valor: 15, efeito: "ataque", cor: "#00ffcc", tag: "FÓTON" },
+            { nome: "Raio Gamma",     valor: 25, efeito: "ataque", cor: "#ff0055", tag: "CÓSMICO" },
+            { nome: "Buraco Negro",   valor: 40, efeito: "ataque", cor: "#9900ff", tag: "SINGULARIDADE" },
+            { nome: "Plasma Estelar",  valor: 10, efeito: "ataque", cor: "#ffcc00", tag: "ESTRELA" },
+            { nome: "Filtro de Éter",  valor: 20, efeito: "cura",   cor: "#00ff55", tag: "REGEN" }
+        ];
+
+        // Guardará as 3 cartas que o jogador possui atualmente na mão
+        let maoAtual = [];
 
         function avancarSplash() {
             document.getElementById('splashScreen').style.display = 'none';
@@ -196,31 +273,109 @@
         }
 
         function iniciarJogoAtivo() {
-            // Reinicia o HP do inimigo ao entrar
+            // Reinicia os atributos de jogo
             enemyHp = 100;
+            playerHp = 100;
+            rodada = 1;
+            
             document.getElementById('enemyHp').innerText = "HP: " + enemyHp;
-            document.getElementById('battleStatus').innerText = "O combate começou!";
+            document.getElementById('playerHp').innerText = "HP: " + playerHp;
+            document.getElementById('turnIndicator').innerText = "Rodada: " + rodada;
+            document.getElementById('battleStatus').innerText = "Selecione uma carta da sua mão cósmica para agir!";
+            
+            // Compra 3 cartas totalmente aleatórias para iniciar o jogo
+            maoAtual = [];
+            for(let i = 0; i < 3; i++) {
+                maoAtual.push(sortearNovaCarta());
+            }
+
+            // Renderiza as cartas visualmente na tela
+            renderizarMaoDoJogador();
             
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('gameBoard').style.display = 'flex';
         }
 
-        function atacarInimigo() {
-            if(enemyHp > 0) {
-                enemyHp -= 20; // Tira 20 de vida
+        // Escolhe uma carta aleatória do deck principal
+        function sortearNovaCarta() {
+            const indiceAleatorio = Math.floor(Math.random() * deckDeCartas.length);
+            return deckDeCartas[indiceAleatorio];
+        }
+
+        // Transforma o array 'maoAtual' em elementos HTML injetados no board
+        function renderizarMaoDoJogador() {
+            const containerMao = document.getElementById('playerHand');
+            containerMao.innerHTML = ''; // Limpa as cartas antigas da tela
+
+            maoAtual.forEach((carta, indice) => {
+                // Cria a estrutura div da carta
+                const elementoCarta = document.createElement('div');
+                elementoCarta.className = 'quantum-card';
+                elementoCarta.style.setProperty('--card-glow', carta.cor + "44"); // Brilho alpha suave
+                elementoCarta.style.borderColor = carta.cor;
+
+                // Vincula o evento de clique para jogar a carta passando seu index
+                elementoCarta.onclick = () => processarJogada(indice);
+
+                // Define o visual interno dependendo se é ataque ou cura
+                const sinalizador = carta.efeito === "cura" ? "+" : "-";
+
+                elementoCarta.innerHTML = `
+                    <div class="card-header">${carta.nome}</div>
+                    <div class="card-value" style="color: ${carta.cor};">${sinalizador}${carta.valor}</div>
+                    <div class="card-footer">${carta.tag}</div>
+                `;
+
+                containerMao.appendChild(elementoCarta);
+            });
+        }
+
+        // Gerencia toda a lógica quando o usuário usa uma carta
+        function processarJogada(indiceCarta) {
+            // Se o inimigo já morreu, impede novas ações
+            if(enemyHp <= 0) return;
+
+            const cartaAteada = maoAtual[indiceCarta];
+            rodada++;
+            document.getElementById('turnIndicator').innerText = "Rodada: " + rodada;
+
+            if (cartaAteada.efeito === "ataque") {
+                // Lógica de Ataque
+                enemyHp -= cartaAteada.valor;
                 if(enemyHp < 0) enemyHp = 0;
                 
                 document.getElementById('enemyHp').innerText = "HP: " + enemyHp;
-                document.getElementById('battleStatus').innerText = "Você causou 20 de dano!";
+                document.getElementById('battleStatus').innerText = `Você jogou [${cartaAteada.nome}] e causou ${cartaAteada.valor} de dano!`;
                 
-                // Efeito visual de piscar a tela vermelha (Dano)
+                // Flash vermelho de dano na tela
                 document.body.classList.add('flash-damage');
                 setTimeout(() => document.body.classList.remove('flash-damage'), 150);
 
-                if(enemyHp === 0) {
-                    document.getElementById('battleStatus').innerText = "Vitória! Você destruiu o Boss!";
-                }
+            } else if (cartaAteada.efeito === "cura") {
+                // Lógica de Cura
+                playerHp += cartaAteada.valor;
+                if(playerHp > 100) playerHp = 100; // Limita ao HP máximo
+                
+                document.getElementById('playerHp').innerText = "HP: " + playerHp;
+                document.getElementById('battleStatus').innerText = `Você jogou [${cartaAteada.nome}] e recuperou ${cartaAteada.valor} de HP!`;
+                
+                // Flash verde de cura na tela
+                document.body.classList.add('flash-heal');
+                setTimeout(() => document.body.classList.remove('flash-heal'), 150);
             }
+
+            // Confere condições de término
+            if(enemyHp === 0) {
+                document.getElementById('battleStatus').innerText = "Vitória! Você destruiu o Boss Quântico!";
+                document.getElementById('playerHand').innerHTML = ''; // Remove as cartas restantes
+                return;
+            }
+
+            // MECÂNICA DE SUBSTITUIÇÃO: Remove a carta usada e adiciona uma inédita na mesma posição
+            maoAtual[indiceCarta] = sortearNovaCarta();
+
+            // Atualiza a exibição na tela
+            renderizarMaoDoJogador();
         }
 
         function voltarAoMenu() {
