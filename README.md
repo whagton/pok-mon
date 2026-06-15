@@ -133,7 +133,7 @@
             display: flex; gap: 12px; justify-content: center; align-items: center; width: 100%; min-height: 165px; perspective: 1000px;
         }
 
-        /* DESIGN DAS CARTAS COŚMICAS */
+        /* DESIGN DAS CARTAS CÓSMICAS */
         .quantum-card {
             width: 125px; height: 165px;
             background: linear-gradient(145deg, #070412 0%, #140d2e 100%);
@@ -189,7 +189,7 @@
         <h1 class="game-title">QUANTUM EVOLUTION</h1>
         <div class="profile-badge">Jogador: Convidado_Quantum</div>
         <div class="menu-buttons">
-            <button class="menu-btn" onclick="iniciarJogoAtivo()">Batalhar (PvE Royale)</button>
+            <button class="menu-btn" onclick="iniciarJogoAtivo()">Batalhar (PvE Chaos Royale)</button>
             <button class="menu-btn" onclick="abrirModal()">Customizar Deck</button>
             <button class="menu-btn" onclick="abrirModal()">Laboratório de Evolução</button>
         </div>
@@ -202,8 +202,8 @@
                 <span class="dev-tag">BY: WHAGTON</span>
             </div>
             <div class="hud-center">
-                <h2>ARENA QUANTUM - BATTLE ROYALE</h2>
-                <p id="battleStatus">Mire em um alvo. Cuidado, os chefes também vão lutar entre si!</p>
+                <h2>ARENA QUANTUM - CHAOS ROYALE</h2>
+                <p id="battleStatus">Os chefes agora têm 60% de chance de se atacarem mutuamente! Aproveite o caos.</p>
             </div>
             <div class="table-ring" id="turnIndicator">Rodada: 1</div>
         </div>
@@ -319,7 +319,7 @@
 
             document.getElementById('playerHp').innerText = "HP: " + playerHp;
             document.getElementById('turnIndicator').innerText = "Rodada: " + rodada;
-            document.getElementById('battleStatus').innerText = "Arena Royale Pronta! Selecione um alvo e jogue uma carta.";
+            document.getElementById('battleStatus').innerText = "Arena Royale Pronta! 60% de chance dos bosses brigarem entre si.";
             document.getElementById('shieldIndicator').style.display = "none";
             
             maoAtual = [];
@@ -436,7 +436,7 @@
                 selecionarAlvo(vivos[0].id);
             }
 
-            // 2. IA DOS BOSSES (SISTEMA DE INFIGHTING)
+            // 2. IA REPROGRAMADA - FOCO ABSOLUTO NA GUERRA INTERNA (60% Briga entre eles / 40% Jogador)
             setTimeout(() => {
                 if(jogoAcabou) return;
 
@@ -445,46 +445,40 @@
                 bosses.forEach(b => {
                     if (!b.vivo) return;
 
-                    if (b.hp < 2000 && Math.random() < 0.5) {
-                        let autoCura = 1000;
+                    // Mecânica de Recuo/Cura Inteligente
+                    if (b.hp < 2000 && Math.random() < 0.4) {
+                        let autoCura = 1200;
                         b.hp += autoCura;
                         if (b.hp > 10000) b.hp = 10000;
-                        logAtaquesBoss += `👾 [${b.nome}] se recolheu e recuperou +${autoCura} HP.\n`;
+                        logAtaquesBoss += `👾 [${b.nome}] recuou para se regenerar (+${autoCura} HP).\n`;
                     } else {
-                        let possiveisAlvos = [{ tipo: "player", nome: "Você" }];
-                        bosses.forEach(outroBoss => {
-                            if (outroBoss.vivo && outroBoss.id !== b.id) {
-                                possiveisAlvos.push({ tipo: "boss", nome: outroBoss.nome, ref: outroBoss });
-                            }
-                        });
+                        // Varre outros bosses vivos para briga interna
+                        let outrosBossesVivos = bosses.filter(outro => outro.vivo && outro.id !== b.id);
+                        
+                        // Decisão da IA: rola um dado (0 a 1). Se for menor que 0.60 e houver outros chefes, eles se atacam!
+                        let atacarOutroBoss = (Math.random() < 0.60) && (outrosBossesVivos.length > 0);
+                        let danoSorteado = Math.floor(Math.random() * (1200 - 500 + 1)) + 500;
 
-                        let alvoDaIa;
-                        if (Math.random() > 0.4 || possiveisAlvos.length === 1) {
-                            alvoDaIa = possiveisAlvos[0];
-                        } else {
-                            let inimigosDisponiveis = possiveisAlvos.slice(1);
-                            alvoDaIa = inimigosDisponiveis[Math.floor(Math.random() * inimigosDisponiveis.length)];
-                        }
-
-                        let danoSorteado = Math.floor(Math.random() * (1100 - 450 + 1)) + 450;
-
-                        if (alvoDaIa.tipo === "player") {
+                        if (!atacarOutroBoss) {
+                            // Ataca o Jogador (40% de chance)
                             if (escudoJogador) {
-                                logAtaquesBoss += `🛡️ [${b.nome}] tentou te acertar, mas seu escudo PROTEGEU.\n`;
+                                logAtaquesBoss += `🛡️ [${b.nome}] tentou te alvejar, mas seu Escudo ABSORVEU o golpe.\n`;
                                 if(cartaJogada.efeito === "refletor") {
                                     b.hp -= 300;
-                                    logAtaquesBoss += `✨ Seu refletor devolveu 300 de dano em [${b.nome}].\n`;
+                                    logAtaquesBoss += `✨ Contra-ataque! Seu escudo refletiu 300 de dano em [${b.nome}].\n`;
                                 }
                                 escudoJogador = false;
                                 document.getElementById('shieldIndicator').style.display = "none";
                             } else {
                                 playerHp -= danoSorteado;
-                                logAtaquesBoss += `💥 [${b.nome}] descarregou energia em VOCÊ (-${danoSorteado} HP).\n`;
+                                logAtaquesBoss += `💥 [${b.nome}] focou em VOCÊ e causou -${danoSorteado} HP.\n`;
                                 aplicarFlashVisual('flash-boss-damage');
                             }
                         } else {
-                            alvoDaIa.ref.hp -= danoSorteado;
-                            logAtaquesBoss += `⚔️ BRIGA INTERNA! [${b.nome}] traiu e atacou [${alvoDaIa.nome}] causando -${danoSorteado} HP!\n`;
+                            // Briga Interna Dinâmica (60% de chance)
+                            let bossAlvoAleatorio = outrosBossesVivos[Math.floor(Math.random() * outrosBossesVivos.length)];
+                            bossAlvoAleatorio.hp -= danoSorteado;
+                            logAtaquesBoss += `⚔️ GUERRA! [${b.nome}] meteu um golpe crítico em [${bossAlvoAleatorio.nome}] (-${danoSorteado} HP)!\n`;
                         }
                     }
                 });
@@ -496,14 +490,14 @@
                 document.getElementById('battleStatus').innerText = msgLog + logAtaquesBoss;
 
                 if (playerHp === 0) {
-                    document.getElementById('battleStatus').innerText = "💀 DERROTA! Os chefes destruíram você e continuaram brigando entre si.";
+                    document.getElementById('battleStatus').innerText = "💀 DERROTA! Você virou poeira cósmica enquanto eles se enfrentavam.";
                     finalizarPartida();
                     return;
                 }
 
                 let sobreviventesPosBriga = bosses.filter(b => b.vivo);
                 if (sobreviventesPosBriga.length === 0) {
-                    document.getElementById('battleStatus').innerText = "🏆 VITÓRIA INUSITADA! Os bosses se mataram sozinhos na briga e você sobreviveu!";
+                    document.getElementById('battleStatus').innerText = "🏆 VITÓRIA POR WO! Os bosses se aniquilaram mutuamente na explosão final!";
                     finalizarPartida();
                     return;
                 }
@@ -511,10 +505,11 @@
                 rodada++;
                 document.getElementById('turnIndicator').innerText = "Rodada: " + rodada;
 
+                // Compra nova carta para repor a mão
                 maoAtual[indiceCarta] = sortearNovaCarta();
                 renderizarMaoDoJogador();
 
-            }, 900);
+            }, 950);
         }
 
         function atualizarVidaDosBosses() {
