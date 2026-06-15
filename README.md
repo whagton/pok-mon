@@ -103,13 +103,21 @@
         .flash-white { background: #333333 !important; }
         .flash-shadow { background: #3a005c !important; }
         .flash-damage { background: #520000 !important; }
+        
+        /* ANIMAÇÃO DO SUPER ATAQUE ELÉTRICO */
+        @keyframes superAtkFlash {
+            0%, 20%, 40%, 60%, 80%, 100% { background: #7a6500 !important; }
+            10%, 30%, 50%, 70%, 90% { background: #ffffff !important; }
+        }
+        .flash-super { animation: superAtkFlash 0.8s ease-in-out; }
 
         @keyframes shake {
             0%, 100% { transform: translate(0, 0); }
-            10%, 30%, 50%, 70%, 90% { transform: translate(-8px, 4px); }
-            20%, 40%, 60%, 80% { transform: translate(8px, -4px); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-12px, 6px); }
+            20%, 40%, 60%, 80% { transform: translate(12px, -6px); }
         }
         .shake-effect { animation: shake 0.35s ease-in-out; }
+        .shake-super-effect { animation: shake 0.8s ease-in-out infinite; }
 
         /* ARENA */
         .screen-area {
@@ -147,6 +155,7 @@
 
         .attack-dash-left { transform: translate(-50px, 30px) scale(1.1); }
         .attack-dash-right { transform: translate(50px, -30px) scale(1.1); }
+        .super-charge-anim { transform: scale(1.4) translate(30px, -15px); filter: brightness(2) drop-shadow(0 0 15px #f1c40f); }
         .damage-blink { filter: matrix(1, 0, 0, 1, 0, 0) brightness(5) sepia(1) hue-rotate(-50deg) !important; }
 
         .shield-effect { border-color: #f1c40f !important; box-shadow: 0 0 15px #f1c40f !important; }
@@ -239,13 +248,38 @@
     <div class="dev-signature">BY: DEV WHAGTON</div>
 
     <script>
-        // ENGENHARIA DE SOM (Web Audio API)
         let audioCtx = null;
 
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
+        }
+
+        // GRITO DE SUPER ATAQUE DO PIKACHU
+        function gritoEletricoPikachu() {
+            initAudio();
+            
+            // Lógica de Voz para falar PIKACHUUUUUUUUUU
+            if ('speechSynthesis' in window) {
+                let falar = new SpeechSynthesisUtterance("Pikaachuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+                falar.lang = 'ja-JP'; // Sotaque japonês original do anime
+                falar.rate = 1.3;     // Um pouco mais rápido e enérgico
+                falar.pitch = 1.8;    // Voz fina e infantil igual ao Pikachu
+                falar.volume = 1.0;
+                window.speechSynthesis.speak(falar);
+            }
+
+            // Som de Trovão Destruidor de Fundo
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(2000, audioCtx.currentTime + 0.8);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.8);
         }
 
         function somAtaquePikachu() {
@@ -319,7 +353,9 @@
         let batalhaAtActive = true;
         let ataquesNoPainel = [];
 
+        // AGORA SÃO 9 ATAQUES POSSÍVEIS NO BANCO DE DADOS (INCLUINDO O SUPER ATAQUE)
         const todosAtaquesPikachu = [
+            { nome: "SUPER ATAQUE (Pikachu!)", dano: 380, precisao: 0.9, super: true, desc: "ULTRA ELÉTRICO | PIKACHUUUU!!!", cor: "#ffcc00" },
             { nome: "Thunderbolt", dano: 140, precisao: 1.0, desc: "Ataque Forte | Elétrico", cor: "#f1c40f" },
             { nome: "Quick Attack", dano: 60, precisao: 1.0, desc: "Ataque Fraco (Não erra) | Normal", cor: "#a8a878" },
             { nome: "Iron Tail", dano: 170, precisao: 0.75, desc: "Muito Forte (75% Chance) | Aço", cor: "#b8b8d0" },
@@ -339,7 +375,7 @@
 
         function iniciarJogo(event) {
             event.stopPropagation();
-            initAudio(); // Ativa os drivers de áudio no clique
+            initAudio();
             const splash = document.getElementById('splashContainer');
             splash.style.opacity = '0';
             splash.style.transform = 'scale(1.2)';
@@ -360,27 +396,32 @@
                 let btn = document.createElement('button');
                 btn.className = 'move-btn';
                 btn.style.borderLeftColor = golpe.cor;
+                if(golpe.super) {
+                    btn.style.background = "linear-gradient(135deg, #4a3b00 0%, #1a1500 100%)";
+                    btn.style.textShadow = "0 0 5px #fff";
+                }
                 btn.innerHTML = `${golpe.nome}<span>${golpe.desc}</span>`;
                 btn.onclick = () => jogarTurno(index);
                 actionPanel.appendChild(btn);
             });
         }
 
-        function dispararFlash(classeFlash) {
+        function dispararFlash(classeFlash, tempo = 150) {
             document.body.classList.add(classeFlash);
-            setTimeout(() => document.body.classList.remove(classeFlash), 150);
+            setTimeout(() => document.body.classList.remove(classeFlash), tempo);
         }
 
-        function tremerTelaPisque(sprite, somEfeito) {
-            gameContainer.classList.add('shake-effect');
+        function tremerTelaPisque(sprite, somEfeito, ultra = false) {
+            gameContainer.classList.add(ultra ? 'shake-super-effect' : 'shake-effect');
             sprite.classList.add('damage-blink');
-            dispararFlash('flash-damage');
+            dispararFlash('flash-damage', ultra ? 700 : 150);
             if(somEfeito) somEfeito();
             
             setTimeout(() => {
                 gameContainer.classList.remove('shake-effect');
+                gameContainer.classList.remove('shake-super-effect');
                 sprite.classList.remove('damage-blink');
-            }, 350);
+            }, ultra ? 750 : 350);
         }
 
         function jogarTurno(indexAtaque) {
@@ -392,51 +433,76 @@
             let golpe = ataquesNoPainel[indexAtaque];
             let logMsg = "";
 
-            // Pikachu Atacando
-            pikachuImg.classList.add('attack-dash-right');
-            somAtaquePikachu();
-            setTimeout(() => pikachuImg.classList.remove('attack-dash-right'), 250);
-
-            if (Math.random() > golpe.precisao) {
-                logMsg = `Pikachu usou ${golpe.nome}, mas errou o alvo!`;
-            } else {
-                if (golpe.escudo) {
-                    player.escudo = true;
-                    document.getElementById('playerHud').classList.add('shield-effect');
-                    logMsg = `Pikachu usou Double Team! Sua evasão aumentou absurdamente.`;
-                    dispararFlash('flash-white');
-                } else {
-                    let danoFinal = golpe.dano;
+            if (golpe.super) {
+                // ANIMAÇÃO EXCLUSIVA DO SUPER ATAQUE
+                pikachuImg.classList.add('super-charge-anim');
+                gritoEletricoPikachu();
+                document.getElementById('logBox').innerText = "PIKACHU ESTÁ CONCENTRANDO TODO O SEU PODER ELÉTRICO!!!";
+                
+                setTimeout(() => {
+                    pikachuImg.classList.remove('super-charge-anim');
                     
-                    if (danoFinal > 0 && Math.random() < 0.25) {
-                        danoFinal = Math.floor(danoFinal * 1.5);
-                        logMsg = `Pikachu usou ${golpe.nome}! Foi um golpe extraordinariamente forte! (-${danoFinal} HP)`;
+                    if (Math.random() > golpe.precisao) {
+                        logMsg = `Pikachu usou seu ${golpe.nome}, mas o Mewtwo conseguiu desviar no último segundo!`;
                     } else {
-                        logMsg = `Pikachu usou ${golpe.nome}! (-${danoFinal} HP)`;
-                    }
-
-                    enemy.hp = Math.max(0, enemy.hp - danoFinal);
-                    
-                    // Som do Mewtwo levando dano
-                    setTimeout(() => tremerTelaPisque(mewtwoImg, somDanoMewtwo), 200);
-
-                    if (golpe.cura) {
-                        player.hp = Math.min(player.maxHp, player.hp + golpe.cura);
-                        logMsg += ` E curou sua energia!`;
-                    }
-                    if (golpe.recoil) {
-                        player.hp = Math.max(0, player.hp - golpe.recoil);
-                        logMsg += ` Mas o Pikachu sofreu dano de recuo (-${golpe.recoil} HP)!`;
-                        setTimeout(() => tremerTelaPisque(pikachuImg, somDanoPikachu), 400);
+                        let danoFinal = golpe.dano;
+                        enemy.hp = Math.max(0, enemy.hp - danoFinal);
+                        logMsg = `⚡ CRITICAL! Pikachu disparou o ${golpe.nome} destruidor!! Mewtwo foi atingido em cheio! (-${danoFinal} HP)`;
+                        tremerTelaPisque(mewtwoImg, somDanoMewtwo, true);
+                        dispararFlash('flash-super', 800);
                     }
                     
-                    dispararFlash(golpe.cor === '#a8a878' ? 'flash-white' : 'flash-yellow');
+                    atualizarBarras();
+                    document.getElementById('logBox').innerText = logMsg;
+                    verificarFluxoJogo();
+
+                }, 1500); // Dá tempo para o grito e a carga do golpe acontecerem
+
+            } else {
+                // ATAQUES NORMAIS DO PIKACHU
+                pikachuImg.classList.add('attack-dash-right');
+                somAtaquePikachu();
+                setTimeout(() => pikachuImg.classList.remove('attack-dash-right'), 250);
+
+                if (Math.random() > golpe.precisao) {
+                    logMsg = `Pikachu usou ${golpe.nome}, mas errou o alvo!`;
+                } else {
+                    if (golpe.escudo) {
+                        player.escudo = true;
+                        document.getElementById('playerHud').classList.add('shield-effect');
+                        logMsg = `Pikachu usou Double Team! Sua evasão aumentou absurdamente.`;
+                        dispararFlash('flash-white');
+                    } else {
+                        let danoFinal = golpe.dano;
+                        if (Math.random() < 0.25) {
+                            danoFinal = Math.floor(danoFinal * 1.5);
+                            logMsg = `Pikachu usou ${golpe.nome}! Foi um golpe extraordinariamente forte! (-${danoFinal} HP)`;
+                        } else {
+                            logMsg = `Pikachu usou ${golpe.nome}! (-${danoFinal} HP)`;
+                        }
+
+                        enemy.hp = Math.max(0, enemy.hp - danoFinal);
+                        setTimeout(() => tremerTelaPisque(mewtwoImg, somDanoMewtwo), 200);
+
+                        if (golpe.cura) {
+                            player.hp = Math.min(player.maxHp, player.hp + golpe.cura);
+                            logMsg += ` E curou sua energia!`;
+                        }
+                        if (golpe.recoil) {
+                            player.hp = Math.max(0, player.hp - golpe.recoil);
+                            logMsg += ` Mas o Pikachu sofreu dano de recuo (-${golpe.recoil} HP)!`;
+                            setTimeout(() => tremerTelaPisque(pikachuImg, somDanoPikachu), 400);
+                        }
+                        dispararFlash(golpe.cor === '#a8a878' ? 'flash-white' : 'flash-yellow');
+                    }
                 }
+                atualizarBarras();
+                document.getElementById('logBox').innerText = logMsg;
+                verificarFluxoJogo();
             }
+        }
 
-            atualizarBarras();
-            document.getElementById('logBox').innerText = logMsg;
-
+        function verificarFluxoJogo() {
             if (enemy.hp === 0) { finalizarJogo(true); return; }
             if (player.hp === 0) { finalizarJogo(false); return; }
 
@@ -466,7 +532,6 @@
                     } else {
                         player.hp = Math.max(0, player.hp - bossGolpe.dano);
                         document.getElementById('logBox').innerText = `Mewtwo contra-atacou com ${bossGolpe.nome} causando -${bossGolpe.dano} HP!`;
-                        // Som do Pikachu levando dano
                         tremerTelaPisque(pikachuImg, somDanoPikachu);
                     }
 
@@ -484,7 +549,7 @@
                     }
                 }, 200);
 
-            }, 2000);
+            }, 2300);
         }
 
         function atualizarBarras() {
