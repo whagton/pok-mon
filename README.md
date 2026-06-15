@@ -6,19 +6,20 @@
     <style>
         body { background: #0d0d1a; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
         
-        /* Flash e Trepidação */
+        /* Flash */
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: yellow; opacity: 0; z-index: 9999; pointer-events: none; }
         @keyframes piscar { 0%, 100% { opacity: 0; } 50% { opacity: 0.7; } }
         .animar-flash { animation: piscar 0.2s; }
 
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            25% { transform: translate(-3px, 0px) rotate(1deg); }
-            50% { transform: translate(3px, 2px) rotate(0deg); }
-            75% { transform: translate(-1px, -1px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(0deg); }
+        /* Trepidação Intensa */
+        @keyframes shake-extreme {
+            0% { transform: translate(10px, 10px) rotate(0deg); }
+            25% { transform: translate(-10px, -5px) rotate(5deg); }
+            50% { transform: translate(10px, 5px) rotate(-5deg); }
+            75% { transform: translate(-10px, -10px) rotate(5deg); }
+            100% { transform: translate(10px, 5px) rotate(0deg); }
         }
-        .tremer-tela { animation: shake 0.2s infinite; }
+        .tremer-tela-intenso { animation: shake-extreme 0.1s infinite; }
 
         /* Jogo */
         #game-ui { display: none; text-align: center; width: 100%; max-width: 500px; padding: 20px; }
@@ -28,9 +29,7 @@
         .arena { display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 50px; position: relative; }
         .pokemon { width: 150px; height: 150px; transition: all 0.2s ease-out; }
         
-        /* Ajuste fino das animações */
         .atk-anim { transform: translateX(50px) scale(1.1); }
-        /* O super agora avança bastante, cresce só um pouco (1.5x) e inclina para parecer investida */
         .super-atk-anim { transform: translateX(150px) scale(1.5) rotate(5deg); z-index: 10; }
     </style>
 </head>
@@ -76,10 +75,10 @@
             let count = 0;
             const intervalo = setInterval(() => {
                 flash.classList.add('animar-flash');
-                arena.classList.add('tremer-tela');
+                arena.classList.add('tremer-tela-intenso'); // Nome da classe atualizada
                 setTimeout(() => {
                     flash.classList.remove('animar-flash');
-                    arena.classList.remove('tremer-tela');
+                    arena.classList.remove('tremer-tela-intenso');
                 }, 150);
                 count++;
                 if (count >= 4) clearInterval(intervalo);
