@@ -128,7 +128,7 @@
             display: none; box-shadow: 0 0 8px #0077ff;
         }
 
-        /* ÁREA DAS CARTAS EXPANDIDA (MÃO COM 4 CARTAS) */
+        /* ÁREA DAS CARTAS EXPANDIDA */
         .hand-container {
             display: flex; gap: 12px; justify-content: center; align-items: center; width: 100%; min-height: 165px; perspective: 1000px;
         }
@@ -260,7 +260,6 @@
             { nome: "Boss Ômega", hp: 10000, vivo: true, id: 2 }
         ];
 
-        // POOL DE CARTAS ATUALIZADO: 14 cartas bem balanceadas
         const deckDeCartas = [
             { nome: "Pulso de Fóton",    valor: 800,  efeito: "ataque",   desc: "Disparo rápido padrão",       cor: "#00ffcc", tag: "FÓTON" },
             { nome: "Raio Gamma",       valor: 1400, efeito: "ataque",   desc: "Forte feixe radioativo",     cor: "#ff0055", tag: "CÓSMICO" },
@@ -272,7 +271,6 @@
             { nome: "Aniquilação Total",valor: 800,  efeito: "area",     desc: "Dano balanceado em todos os chefes", cor: "#ff5500", tag: "ÁREA" },
             { nome: "Choque Quântico",  valor: 1100, efeito: "ataque",   desc: "Sobrecarga elétrica estática", cor: "#00ffff", tag: "ELÉTRICO" },
             { nome: "Cometa Binário",   valor: 1800, efeito: "ataque",   desc: "Impacto duplo concentrado",    cor: "#e100ff", tag: "METEORO" },
-            // Novas cartas equilibradas:
             { nome: "Inversor Carga",   valor: 500,  efeito: "hibrido",  desc: "Cura você 500 e bate 500 no alvo", cor: "#ffa500", tag: "MUTAÇÃO" },
             { nome: "Estática Quântica",valor: 600,  efeito: "ataque",   desc: "Dano elétrico leve contínuo", cor: "#bfff00", tag: "PARTÍCULA" },
             { nome: "Escudo Espelhos",  valor: 300,  efeito: "refletor", desc: "Ganha escudo e reflete 300 de dano", cor: "#ff007f", tag: "REVERSO" },
@@ -438,8 +436,8 @@
                 selecionarAlvo(vivos[0].id);
             }
 
-            // 2. IA INTELIGENTE DOS BOSSES (SISTEMA DE INFIGHTING / AGGRESSION)
-            迫 BANCA_DE_GOLPES = setTimeout(() => {
+            // 2. IA DOS BOSSES (SISTEMA DE INFIGHTING)
+            setTimeout(() => {
                 if(jogoAcabou) return;
 
                 let logAtaquesBoss = "";
@@ -447,15 +445,12 @@
                 bosses.forEach(b => {
                     if (!b.vivo) return;
 
-                    // Crise de identidade / Cura emergencial
                     if (b.hp < 2000 && Math.random() < 0.5) {
                         let autoCura = 1000;
                         b.hp += autoCura;
                         if (b.hp > 10000) b.hp = 10000;
                         logAtaquesBoss += `👾 [${b.nome}] se recolheu e recuperou +${autoCura} HP.\n`;
                     } else {
-                        // SISTEMA DE ALVO DA IA: Pode atacar o jogador ou OUTRO boss vivo!
-                        // Criamos uma lista de possíveis alvos (jogador + outros bosses vivos)
                         let possiveisAlvos = [{ tipo: "player", nome: "Você" }];
                         bosses.forEach(outroBoss => {
                             if (outroBoss.vivo && outroBoss.id !== b.id) {
@@ -463,19 +458,16 @@
                             }
                         });
 
-                        // Escolha inteligente: 60% de chance de focar no jogador, 40% de se atacarem entre eles!
                         let alvoDaIa;
                         if (Math.random() > 0.4 || possiveisAlvos.length === 1) {
-                            alvoDaIa = possiveisAlvos[0]; // Jogador
+                            alvoDaIa = possiveisAlvos[0];
                         } else {
-                            // Escolhe um boss aleatório da briga interna
                             let inimigosDisponiveis = possiveisAlvos.slice(1);
                             alvoDaIa = inimigosDisponiveis[Math.floor(Math.random() * inimigosDisponiveis.length)];
                         }
 
                         let danoSorteado = Math.floor(Math.random() * (1100 - 450 + 1)) + 450;
 
-                        // Aplica o dano baseado no alvo escolhido pela IA
                         if (alvoDaIa.tipo === "player") {
                             if (escudoJogador) {
                                 logAtaquesBoss += `🛡️ [${b.nome}] tentou te acertar, mas seu escudo PROTEGEU.\n`;
@@ -491,7 +483,6 @@
                                 aplicarFlashVisual('flash-boss-damage');
                             }
                         } else {
-                            // Briga de Boss contra Boss!
                             alvoDaIa.ref.hp -= danoSorteado;
                             logAtaquesBoss += `⚔️ BRIGA INTERNA! [${b.nome}] traiu e atacou [${alvoDaIa.nome}] causando -${danoSorteado} HP!\n`;
                         }
@@ -510,7 +501,6 @@
                     return;
                 }
 
-                // Verifica se após a briga deles sobrou algum vivo
                 let sobreviventesPosBriga = bosses.filter(b => b.vivo);
                 if (sobreviventesPosBriga.length === 0) {
                     document.getElementById('battleStatus').innerText = "🏆 VITÓRIA INUSITADA! Os bosses se mataram sozinhos na briga e você sobreviveu!";
