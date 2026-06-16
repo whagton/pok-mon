@@ -41,11 +41,18 @@
         /* Log de Mensagens da Batalha */
         #battle-log { text-align: center; font-size: 16px; font-weight: bold; margin-top: 10px; min-height: 24px; color: #ffcc00; }
 
-        /* Flash Amarelo (Pikachu) e Roxo (Mewtwo) */
+        /* Animações de Flash */
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0; pointer-events: none; z-index: 9999; }
-        @keyframes flash-yellow { 0%, 100% { opacity: 0; } 25% { background: yellow; opacity: 0.6; } 50% { background: black; opacity: 0.6; } 75% { background: yellow; opacity: 0.6; } }
+        
+        /* Trovão: pisca forte e mais vezes */
+        @keyframes flash-thunder { 0%, 100% { opacity: 0; } 20%, 60% { background: yellow; opacity: 0.7; } 40%, 80% { background: black; opacity: 0.7; } }
+        /* Choque: Pisca apenas duas vezes bem rápido */
+        @keyframes flash-shock { 0%, 100% { opacity: 0; } 25%, 75% { background: yellow; opacity: 0.6; } 50% { background: black; opacity: 0.4; } }
+        /* Mewtwo: Flash Roxo */
         @keyframes flash-purple { 0%, 100% { opacity: 0; } 25% { background: #8a2be2; opacity: 0.6; } 50% { background: black; opacity: 0.6; } 75% { background: #8a2be2; opacity: 0.6; } }
-        .animar-flash-pika { animation: flash-yellow 0.1s 4; }
+        
+        .animar-flash-trovao { animation: flash-thunder 0.12s 4; }
+        .animar-flash-choque { animation: flash-shock 0.15s 2; } /* Pisca apenas 2 vezes */
         .animar-flash-mew { animation: flash-purple 0.1s 4; }
         
         /* Trepidação da Arena */
@@ -88,8 +95,8 @@
             <!-- Botões de Ataque -->
             <div class="controls-container">
                 <div class="controls">
-                    <button class="move-btn" onclick="executarAtaque('TROVÃO', 450)" id="btn-atk1">TROVÃO</button>
-                    <button class="move-btn" onclick="executarAtaque('CHOQUE DO TROVÃO', 300)" id="btn-atk2">CHOQUE</button>
+                    <button class="move-btn" onclick="executarAtaque('TROVÃO', 450, 'trovao')" id="btn-atk1">TROVÃO</button>
+                    <button class="move-btn" onclick="executarAtaque('CHOQUE DO TROVÃO', 300, 'choque')" id="btn-atk2">CHOQUE</button>
                 </div>
             </div>
         </div>
@@ -100,7 +107,6 @@
     <audio id="sfx-mewtwo" src="https://pokemonshowdown.com"></audio>
 
     <script>
-        // Variaveis de vida dos Pokémons
         let mewtwoHP = 3000;
         let pikachuHP = 3000;
         let turnoBloqueado = false;
@@ -118,13 +124,12 @@
             document.getElementById('game-ui').style.display = 'block';
         }
 
-        // Desativa os botões para o jogador não clicar durante as animações
         function alternarBotoes(status) {
             document.getElementById('btn-atk1').disabled = status;
             document.getElementById('btn-atk2').disabled = status;
         }
 
-        function executarAtaque(nomeAtaque, dano) {
+        function executarAtaque(nomeAtaque, dano, tipoAtaque) {
             if (turnoBloqueado) return;
             turnoBloqueado = true;
             alternarBotoes(true);
@@ -134,29 +139,32 @@
             const sfxPika = document.getElementById('sfx-pika');
             const log = document.getElementById('battle-log');
 
-            // --- TURNO DO PIKACHU ---
             log.innerText = `Pikachu usou ${nomeAtaque}!`;
             sfxPika.currentTime = 0;
             sfxPika.play();
             
-            flash.classList.add('animar-flash-pika');
+            // Escolhe a animação certa baseada no botão clicado
+            if (tipoAtaque === 'trovao') {
+                flash.classList.add('animar-flash-trovao');
+            } else {
+                flash.classList.add('animar-flash-choque');
+            }
             arena.classList.add('tremer-tela');
             
-            // Aplica o dano no Mewtwo
             mewtwoHP = Math.max(0, mewtwoHP - dano);
             document.getElementById('mewtwo-hp').innerText = `HP: ${mewtwoHP}`;
 
             setTimeout(() => {
-                flash.classList.remove('animar-flash-pika');
+                flash.classList.remove('animar-flash-trovao');
+                flash.classList.remove('animar-flash-choque');
                 arena.classList.remove('tremer-tela');
 
                 if (mewtwoHP <= 0) {
                     log.innerText = "Mewtwo desmaiou! Você venceu!";
                     document.getElementById('mewtwo-box').style.opacity = '0';
-                    return; // Fim de jogo, Mewtwo não contra-ataca
+                    return;
                 }
 
-                // --- CONTRA-ATAQUE DO MEWTWO (Após 1.2 segundos) ---
                 setTimeout(contraAtaqueMewtwo, 1200);
 
             }, 500);
@@ -175,7 +183,6 @@
             flash.classList.add('animar-flash-mew');
             arena.classList.add('tremer-tela');
 
-            // Mewtwo causa dano aleatório entre 350 e 500
             let danoMewtwo = Math.floor(Math.random() * 150) + 350;
             pikachuHP = Math.max(0, pikachuHP - danoMewtwo);
             document.getElementById('pikachu-hp').innerText = `HP: ${pikachuHP}`;
@@ -185,8 +192,3 @@
                 arena.classList.remove('tremer-tela');
 
                 if (pikachuHP <= 0) {
-                    log.innerText = "Pikachu desmaiou! Você perdeu!";
-                    document.getElementById('pikachu-box').style.opacity = '0';
-                } else {
-                    log.innerText = "O que o Pikachu vai fazer?";
-                    turnoBloqueado = false;
