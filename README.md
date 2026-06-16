@@ -23,7 +23,7 @@
 
         /* Arena Centralizada */
         #game-ui { display: none; width: 100%; height: 100%; position: relative; }
-        .battle-arena { display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 100%; max-width: 600px; margin: 0 auto; padding: 40px 20px; box-sizing: border-box; }
+        .battle-arena { display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 100%; max-width: 600px; margin: 0 auto; padding: 30px 20px; box-sizing: border-box; }
         
         /* Containers dos Pokémons com transições e animações de Entrada */
         .mewtwo-container { display: flex; flex-direction: column; align-items: center; align-self: flex-end; text-align: center; transition: 0.3s; }
@@ -39,11 +39,15 @@
         .pokemon { width: 150px; height: 150px; object-fit: contain; transition: filter 0.1s, opacity 0.5s; }
         
         /* Nova HUD estilizada com Barra de Vida (Lifebar) */
-        .hud { width: 180px; background: rgba(0, 0, 0, 0.6); padding: 8px 12px; border-radius: 10px; border: 2px solid #444; margin-bottom: 5px; text-align: left; }
-        .hp-bar-container { width: 100%; height: 12px; background: #333; border-radius: 6px; border: 1px solid #000; overflow: hidden; margin-top: 5px; }
+        .hud { width: 190px; background: rgba(0, 0, 0, 0.7); padding: 8px 12px; border-radius: 10px; border: 2px solid #444; margin-bottom: 5px; text-align: left; }
+        .hp-bar-container { width: 100%; height: 100%; background: #333; border-radius: 6px; border: 1px solid #000; overflow: hidden; margin-top: 5px; height: 12px; }
         .hp-bar-fill { width: 100%; height: 100%; background: #4cd137; transition: width 0.4s ease-out, background-color 0.4s; }
         .hp-text { font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         
+        /* Barra de Especial HUD */
+        .special-container { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-top: 4px; overflow: hidden; border: 1px solid #111; }
+        .special-fill { width: 0%; height: 100%; background: #00a8ff; transition: width 0.4s ease-out; }
+
         /* Animação de Pulo de Ataque do Pikachu */
         .pika-pulo { animation: pikaAtk 0.4s ease-in-out; }
         @keyframes pikaAtk { 0%, 100% { transform: translate(0, 0); } 40% { transform: translate(40px, -40px) scale(1.1); } }
@@ -56,33 +60,37 @@
         .spark { position: absolute; width: 6px; height: 6px; background: #fffb00; box-shadow: 0 0 10px #ffea00; border-radius: 50%; pointer-events: none; z-index: 999; animation: sparkFade 0.5s ease-out forwards; }
         @keyframes sparkFade { from { transform: translate(0, 0) scale(1); opacity: 1; } to { transform: translate(var(--mx), var(--my)) scale(0); opacity: 0; } }
 
-        /* Painel de Ataques no rodapé */
-        .controls-container { width: 100%; display: flex; justify-content: center; padding-top: 20px; position: relative; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
-        .move-btn { padding: 15px; cursor: pointer; background: #222; color: white; border: 2px solid #ffcc00; font-weight: bold; border-radius: 8px; transition: 0.2s; }
+        /* Painel de Ataques no rodapé expandido */
+        .controls-container { width: 100%; display: flex; justify-content: center; padding-top: 10px; position: relative; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 450px; }
+        .move-btn { padding: 12px; cursor: pointer; background: #222; color: white; border: 2px solid #ffcc00; font-weight: bold; border-radius: 8px; transition: 0.2s; font-size: 13px; }
         .move-btn:hover:not(:disabled) { background: #ffcc00; color: black; }
         .move-btn:disabled { background: #444; border-color: #666; cursor: not-allowed; opacity: 0.5; }
+        
+        /* Botões especiais utilitários */
+        .heal-btn { border-color: #4cd137; }
+        .heal-btn:hover:not(:disabled) { background: #4cd137; color: white; }
+        .ult-btn { border-color: #00a8ff; color: #00a8ff; }
+        .ult-btn:hover:not(:disabled) { background: #00a8ff; color: white; }
 
-        /* Botão de Jogar Novamente (Invisível no início) */
+        /* Botão de Jogar Novamente */
         #btn-restart { display: none; position: absolute; padding: 15px 30px; cursor: pointer; background: #ffcc00; border: 3px solid #000; font-weight: bold; border-radius: 10px; color: black; font-size: 16px; z-index: 10; animation: popIn 0.3s ease-out; }
 
         /* Log de Mensagens da Batalha */
-        #battle-log { text-align: center; font-size: 16px; font-weight: bold; margin-top: 10px; min-height: 24px; color: #ffcc00; }
+        #battle-log { text-align: center; font-size: 15px; font-weight: bold; margin-top: 5px; min-height: 40px; color: #ffcc00; padding: 0 10px; line-height: 1.4; }
 
         /* Animações de Flash */
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0; pointer-events: none; z-index: 9999; }
+        .animar-flash-trovao { animation: flash-thunder 0.12s 4; }
+        .animar-flash-choque { animation: flash-shock 0.15s 2; }
+        .animar-flash-mew { animation: flash-purple 0.1s 4; }
         
         @keyframes flash-thunder { 0%, 100% { opacity: 0; } 20%, 60% { background: yellow; opacity: 0.7; } 40%, 80% { background: black; opacity: 0.7; } }
         @keyframes flash-shock { 0%, 100% { opacity: 0; } 25%, 75% { background: yellow; opacity: 0.6; } 50% { background: black; opacity: 0.4; } }
         @keyframes flash-purple { 0%, 100% { opacity: 0; } 25% { background: #8a2be2; opacity: 0.6; } 50% { background: black; opacity: 0.6; } 75% { background: #8a2be2; opacity: 0.6; } }
         
-        .animar-flash-trovao { animation: flash-thunder 0.12s 4; }
-        .animar-flash-choque { animation: flash-shock 0.15s 2; }
-        .animar-flash-mew { animation: flash-purple 0.1s 4; }
-        
-        /* Trepidação da Arena */
-        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-10px, -10px); } 50% { transform: translate(10px, 10px); } 75% { transform: translate(-10px, 10px); } }
         .tremer-tela { animation: shake 0.1s 4; }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-10px, -10px); } 50% { transform: translate(10px, 10px); } 75% { transform: translate(-10px, 10px); } }
     </style>
 </head>
 <body>
@@ -124,6 +132,9 @@
                     <div class="hp-bar-container">
                         <div class="hp-bar-fill" id="pikachu-hp-bar"></div>
                     </div>
+                    <div class="special-container">
+                        <div class="special-fill" id="pikachu-ult-bar"></div>
+                    </div>
                 </div>
             </div>
 
@@ -132,22 +143,4 @@
                 <div class="controls" id="action-panel">
                     <button class="move-btn" onclick="executarAtaque('TROVÃO', 450, 'trovao')" id="btn-atk1">TROVÃO</button>
                     <button class="move-btn" onclick="executarAtaque('CHOQUE DO TROVÃO', 300, 'choque')" id="btn-atk2">CHOQUE</button>
-                </div>
-                <button id="btn-restart" onclick="reiniciarJogo()">JOGAR NOVAMENTE</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Efeitos Sonoros com Links Livres de Bloqueio -->
-    <audio id="sfx-pika" src="https://pokemonshowdown.com"></audio>
-    <audio id="sfx-mewtwo" src="https://pokemonshowdown.com"></audio>
-    <audio id="sfx-victory" src="https://archive.org"></audio>
-    <audio id="sfx-defeat" src="https://pokemonshowdown.com"></audio>
-
-    <script>
-        const MAX_HP = 3000;
-        let mewtwoHP = MAX_HP;
-        let pikachuHP = MAX_HP;
-        let turnoBloqueado = false;
-
-        function abrirPokebola() {
+                    <button class="move-btn heal-btn" onclick="usarItem()" id="btn-item">MOCHILA (POTION: 3)</button>
