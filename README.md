@@ -1,30 +1,29 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Batalha Pokémon</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
-        .screen { text-align: center; }
+<div id="start-screen" class="screen">
+    <h1>Duelo Pokémon</h1>
+    
+    <!-- A Pokébola sozinha aqui -->
+    <div id="pokebola" onclick="abrirPokebola()">
+        <div id="top" class="poke-top"></div>
+        <div id="bottom" class="poke-bottom"></div>
+    </div>
 
-        /* Pokébola com botão centralizado */
-        #pokebola { 
-            width: 150px; height: 150px; cursor: pointer; margin: 20px auto; 
-            border: 6px solid black; border-radius: 50%; 
-            position: relative; background: white; overflow: hidden;
-        }
-        .poke-top { height: 50%; background: red; border-bottom: 6px solid black; transition: transform 0.5s; }
-        .poke-bottom { height: 50%; background: white; transition: transform 0.5s; }
-        .open-top { transform: translateY(-100%); }
-        .open-bottom { transform: translateY(100%); }
+    <!-- O botão fora da Pokébola, mas centralizado pelo CSS -->
+    <button id="btn-iniciar" style="display:none;" onclick="irParaSelecao()">Iniciar Aventura</button>
+</div>
+#btn-iniciar {
+    display: none;
+    margin: -85px auto 0 auto; /* Valor negativo sobe o botão para cima da bola */
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 20px;
+    border: 2px solid black;
+    font-weight: bold;
+    background-color: white;
+    position: relative;
+    z-index: 10; /* Garante que fique por cima */
+}
 
-        /* O botão fica no centro absoluto da Pokébola */
-        #btn-iniciar { 
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            padding: 10px 20px; cursor: pointer; z-index: 10;
-            border-radius: 20px; border: 2px solid black; font-weight: bold;
-        }
+        
 
         /* UI de Batalha */
         .hp-container { width: 200px; height: 20px; background: #ddd; border: 2px solid black; margin: 5px auto; }
