@@ -6,26 +6,30 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #0d0d1a; color: white; font-family: sans-serif; overflow: hidden; }
 
-        /* Centralização total da Pokébola e Botão */
-        #start-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 10000; }
-        .pokeball-container { position: relative; width: 150px; height: 150px; cursor: pointer; }
+        /* Tela Inicial com Pokébola e Botão Centralizados */
+        #start-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; width: 300px; height: 300px; }
+        .pokeball-container { position: relative; width: 150px; height: 150px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .p-top, .p-bottom { width: 150px; height: 75px; background: red; border: 6px solid #000; position: absolute; transition: 0.8s; box-sizing: border-box; }
         .p-top { top: 0; border-radius: 75px 75px 0 0; z-index: 2; }
         .p-bottom { bottom: 0; background: white; border-radius: 0 0 75px 75px; z-index: 1; border-top: none; }
-        .open-top { transform: translateY(-40px); }
-        .open-bottom { transform: translateY(40px); }
-        #btn-iniciar { display: none; margin-top: 50px; padding: 15px 30px; cursor: pointer; background: #ffcc00; border: none; font-weight: bold; border-radius: 10px; color: black; }
+        
+        /* Animação da Pokébola abrindo */
+        .open-top { transform: translateY(-60px); }
+        .open-bottom { transform: translateY(60px); }
+        
+        /* Botão Iniciar aparece exatamente no meio */
+        #btn-iniciar { display: none; position: absolute; z-index: 3; padding: 12px 24px; cursor: pointer; background: #ffcc00; border: 3px solid #000; font-weight: bold; border-radius: 10px; color: black; font-size: 14px; white-space: nowrap; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Arena Centralizada */
         #game-ui { display: none; width: 100%; height: 100%; position: relative; }
-        
         .battle-arena { display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 100%; max-width: 600px; margin: 0 auto; padding: 40px 20px; box-sizing: border-box; }
         
         /* Containers dos Pokémons */
         .mewtwo-container { display: flex; flex-direction: column; align-items: center; align-self: flex-end; text-align: center; }
         .pikachu-container { display: flex; flex-direction: column; align-items: center; align-self: flex-start; text-align: center; }
         .pokemon { width: 150px; height: 150px; object-fit: contain; }
-        .hp-bar { font-weight: bold; margin-bottom: 5px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
+        .hp-bar { font-weight: bold; margin-bottom: 5px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; border: 1px solid #444; }
         
         /* Painel de Ataques no rodapé */
         .controls-container { width: 100%; display: flex; justify-content: center; padding-top: 20px; }
@@ -38,13 +42,14 @@
         @keyframes flash-fast { 0%, 100% { opacity: 0; } 25% { background: yellow; opacity: 0.6; } 50% { background: black; opacity: 0.6; } 75% { background: yellow; opacity: 0.6; } }
         .animar-flash { animation: flash-fast 0.1s 4; }
         
-        /* Trepidação */
+        /* Trepidação da Arena */
         @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-10px, -10px); } 50% { transform: translate(10px, 10px); } 75% { transform: translate(-10px, 10px); } }
         .tremer-tela { animation: shake 0.1s 4; }
     </style>
 </head>
 <body>
 
+    <!-- Tela Inicial -->
     <div id="start-screen">
         <div class="pokeball-container" onclick="abrirPokebola()">
             <div class="p-top" id="top"></div>
@@ -53,39 +58,45 @@
         <button id="btn-iniciar" onclick="iniciarJogo()">INICIAR BATALHA</button>
     </div>
 
+    <!-- Overlay de Flash do Trovão -->
     <div class="flash-overlay" id="flash"></div>
 
+    <!-- Interface do Jogo -->
     <div id="game-ui">
-        <div class="battle-arena">
-            <!-- Mewtwo no topo direito da arena -->
+        <div class="battle-arena" id="arena">
+            <!-- Mewtwo (Inimigo - Topo Direito) -->
             <div class="mewtwo-container">
-                <div class="hp-bar">HP: 3000</div>
-                <img src="https://img.pokemondb.net/sprites/black-white/anim/normal/mewtwo.gif" class="pokemon">
+                <div class="hp-bar" id="mewtwo-hp-text">HP: 3000</div>
+                <img src="https://pokemondb.net" class="pokemon">
             </div>
             
-            <!-- Pikachu embaixo esquerdo da arena -->
+            <!-- Pikachu (Jogador - Baixo Esquerdo) -->
             <div class="pikachu-container">
-                <img src="https://img.pokemondb.net/sprites/black-white/anim/back-normal/pikachu.gif" class="pokemon">
+                <img src="https://pokemondb.net" class="pokemon">
                 <div class="hp-bar">HP: 3000</div>
             </div>
 
-            <!-- Painel de comandos fixo embaixo -->
+            <!-- Botões de Ataque -->
             <div class="controls-container">
                 <div class="controls">
-                    <button class="move-btn" onclick="executarAtaque()">TROVÃO</button>
-                    <button class="move-btn" onclick="executarAtaque()">CHOQUE</button>
+                    <button class="move-btn" onclick="executarAtaque('TROVÃO')">TROVÃO</button>
+                    <button class="move-btn" onclick="executarAtaque('CHOQUE')">CHOQUE</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <audio id="sfx" src="https://www.myinstants.com/media/sounds/thunder-sound-effect.mp3"></audio>
+    <!-- Som do Trovão -->
+    <audio id="sfx" src="https://myinstants.com"></audio>
 
     <script>
         function abrirPokebola() {
             document.getElementById('top').classList.add('open-top');
             document.getElementById('bottom').classList.add('open-bottom');
-            setTimeout(() => { document.getElementById('btn-iniciar').style.display = 'block'; }, 600);
+            // Exibe o botão exatamente no centro após a animação terminar
+            setTimeout(() => { 
+                document.getElementById('btn-iniciar').style.display = 'block'; 
+            }, 600);
         }
 
         function iniciarJogo() {
@@ -93,17 +104,23 @@
             document.getElementById('game-ui').style.display = 'block';
         }
 
-        function ejecutarAtaque() {
+        function executarAtaque(nomeAtaque) {
             const flash = document.getElementById('flash');
-            const game = document.getElementById('game-ui');
-            document.getElementById('sfx').play();
+            const arena = document.getElementById('arena');
+            const sfx = document.getElementById('sfx');
             
+            // Força o áudio a recomeçar do zero caso clique rápido
+            sfx.currentTime = 0;
+            sfx.play();
+            
+            // Adiciona as classes de animação na arena e no flash
             flash.classList.add('animar-flash');
-            game.classList.add('tremer-tela');
+            arena.classList.add('tremer-tela');
             
+            // Remove as classes após 500ms para poder atacar de novo
             setTimeout(() => {
                 flash.classList.remove('animar-flash');
-                game.classList.remove('tremer-tela');
+                arena.classList.remove('tremer-tela');
             }, 500);
         }
     </script>
