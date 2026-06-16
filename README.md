@@ -4,37 +4,70 @@
     <meta charset="UTF-8">
     <title>Batalha Pokémon</title>
     <style>
-        /* O SEU CSS VAI AQUI DENTRO */
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
         .screen { text-align: center; }
 
-        #pokebola { width: 100px; height: 100px; cursor: pointer; margin: 20px auto; border: 4px solid black; border-radius: 50%; position: relative; background: white; }
-        .poke-top { height: 50%; background: red; border-bottom: 4px solid black; transition: transform 0.5s; width: 100%; position: absolute; top: 0; }
-        .poke-bottom { height: 50%; background: white; transition: transform 0.5s; width: 100%; position: absolute; bottom: 0; }
+        /* Pokébola com botão centralizado */
+        #pokebola { 
+            width: 150px; height: 150px; cursor: pointer; margin: 20px auto; 
+            border: 6px solid black; border-radius: 50%; 
+            position: relative; background: white; overflow: hidden;
+        }
+        .poke-top { height: 50%; background: red; border-bottom: 6px solid black; transition: transform 0.5s; }
+        .poke-bottom { height: 50%; background: white; transition: transform 0.5s; }
         .open-top { transform: translateY(-100%); }
         .open-bottom { transform: translateY(100%); }
-        
+
+        /* O botão fica no centro absoluto da Pokébola */
+        #btn-iniciar { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            padding: 10px 20px; cursor: pointer; z-index: 10;
+            border-radius: 20px; border: 2px solid black; font-weight: bold;
+        }
+
+        /* UI de Batalha */
         .hp-container { width: 200px; height: 20px; background: #ddd; border: 2px solid black; margin: 5px auto; }
         #player-hp-bar, #enemy-hp-bar { height: 100%; background: lime; width: 100%; transition: width 0.5s; }
-        .poke-card { display: inline-block; cursor: pointer; border: 1px solid #333; margin: 10px; padding: 10px; }
+        .poke-card { display: inline-block; cursor: pointer; border: 1px solid #333; margin: 10px; padding: 10px; background: white; }
     </style>
 </head>
 <body>
 
-    <!-- AQUI VAI O SEU HTML (DO MESMO JEITO QUE VOCÊ ENVIOU) -->
     <div id="start-screen" class="screen">
         <h1>Duelo Pokémon</h1>
         <div id="pokebola" onclick="abrirPokebola()">
             <div id="top" class="poke-top"></div>
             <div id="bottom" class="poke-bottom"></div>
+            <button id="btn-iniciar" style="display:none;" onclick="irParaSelecao()">Iniciar</button>
         </div>
-        <button id="btn-iniciar" onclick="irParaSelecao()" style="display:none;">Iniciar Aventura</button>
     </div>
 
-    <!-- ... restou do seu HTML ... -->
+    <div id="select-screen" class="screen" style="display:none;">
+        <h2>Escolha seu Pokémon:</h2>
+        <div id="options-container"></div>
+    </div>
+
+    <div id="game-ui" class="screen" style="display:none;">
+        <div id="battle-field">
+            <div class="side">
+                <p id="enemy-name-txt"></p>
+                <div class="hp-container"><div id="enemy-hp-bar"></div></div>
+                <p id="enemy-hp-text"></p>
+                <img id="enemy-sprite" src="" alt="Inimigo">
+            </div>
+            <div class="side">
+                <p id="player-name-txt"></p>
+                <div class="hp-container"><div id="player-hp-bar"></div></div>
+                <p id="player-hp-text"></p>
+                <img id="player-sprite" src="" alt="Jogador">
+            </div>
+        </div>
+        <div id="battle-dialog-box">A batalha começou!</div>
+        <div id="moves-container"></div>
+    </div>
 
     <script>
-        /* O SEU JAVASCRIPT VAI AQUI DENTRO */
         const pokesData = {
             'PIKACHU': { id: 25, moves: ['Choque do Trovão', 'Investida'] },
             'CHARIZARD': { id: 6, moves: ['Lança-Chamas', 'Ataque de Asa'] },
@@ -47,10 +80,59 @@
         function abrirPokebola() {
             document.getElementById('top').classList.add('open-top');
             document.getElementById('bottom').classList.add('open-bottom');
-            setTimeout(() => { document.getElementById('btn-iniciar').style.display = 'inline-block'; }, 500);
+            setTimeout(() => { document.getElementById('btn-iniciar').style.display = 'block'; }, 500);
         }
 
-        /* ... o resto das suas funções ... */
-    </script>
-</body>
-</html>
+        function irParaSelecao() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('select-screen').style.display = 'block';
+            const container = document.getElementById('options-container');
+            for(let name in pokesData) {
+                container.innerHTML += `<div class="poke-card" onclick="iniciarBatalha('${name}')">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokesData[name].id}.png">
+                    <p>${name}</p></div>`;
+            }
+        }
+
+        function iniciarBatalha(nome) {
+            playerPokemon = nome;
+            const pokes = Object.keys(pokesData);
+            enemyPokemon = pokes[Math.floor(Math.random() * pokes.length)];
+            
+            document.getElementById('select-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            
+            document.getElementById('player-name-txt').innerText = playerPokemon;
+            document.getElementById('enemy-name-txt').innerText = enemyPokemon;
+            document.getElementById('player-sprite').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokesData[playerPokemon].id}.png`;
+            document.getElementById('enemy-sprite').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokesData[enemyPokemon].id}.png`;
+            
+            atualizarBarras();
+            gerarBotoes();
+        }
+
+        function atualizarBarras() {
+            document.getElementById('player-hp-bar').style.width = (playerHP/maxHP)*100 + "%";
+            document.getElementById('enemy-hp-bar').style.width = (enemyHP/maxHP)*100 + "%";
+            document.getElementById('player-hp-text').innerText = `${playerHP}/${maxHP}`;
+            document.getElementById('enemy-hp-text').innerText = `${enemyHP}/${maxHP}`;
+        }
+
+        function gerarBotoes() {
+            const container = document.getElementById('moves-container');
+            container.innerHTML = "";
+            pokesData[playerPokemon].moves.forEach(m => {
+                container.innerHTML += `<button onclick="atacar('${m}')">${m}</button>`;
+            });
+        }
+
+        function atacar(nome) {
+            if (!turnoJogador) return;
+            const dano = Math.floor(Math.random() * 500) + 200;
+            enemyHP = Math.max(0, enemyHP - dano);
+            atualizarBarras();
+            
+            if (enemyHP <= 0) {
+                alert("Vitória!");
+                location.reload();
+                
